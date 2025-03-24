@@ -96,26 +96,26 @@ function processCRMData(data) {
 }
 
 // 记录任务 (根据复选框状态决定是否显示合同编号, 处理预计时间)
+// recordTask, insertTask, clearRecords, showOngoingTask  这几个函数添加了复选框和进度条
 function recordTask() {
     const taskInput = document.getElementById("taskInput");
-    const timeEstimateValue = document.getElementById("timeEstimateValue").value; // 获取数值
-    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;   // 获取单位
+    const timeEstimateValue = document.getElementById("timeEstimateValue").value;
+    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;
     const contractSelect = document.getElementById("contractSelect");
     const selectedContract = contractSelect.options[contractSelect.selectedIndex];
     const projectContent = selectedContract.getAttribute('data-project-content');
     const recordContainer = document.getElementById("recordContainer");
     const unknownContractCheckbox = document.getElementById("unknownContractCheckbox");
     const now = new Date();
-    const time = now.toLocaleTimeString();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const taskText = taskInput.value || projectContent;
-    const timeEstimate = timeEstimateValue + timeEstimateUnit; // 组合时间和单位
+    const timeEstimate = timeEstimateValue + timeEstimateUnit;
 
     const recordCard = document.createElement("div");
     recordCard.classList.add("record-card");
 
-    let content = `<p>时间：${time}</p>`;
-    // 根据复选框状态添加合同编号
+    let content = `<p>${time}</p>`;
     if (!unknownContractCheckbox.checked && selectedContract.value) {
         content += `<p>合同编号：${selectedContract.value}</p>`;
     }
@@ -123,17 +123,35 @@ function recordTask() {
         content += `<p>项目内容：${taskText}</p>`;
     }
     if (timeEstimate) {
-        content += `<p><i>预计：${timeEstimate}</i></p>`; // 显示组合后的时间
+        content += `<p><i>预计：${timeEstimate}</i></p>`;
     }
+
+    // 添加复选框组、进度条和“全部完成”按钮, 添加删除按钮
+    content += `
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="taskCheckbox">参数明晰</label>
+            <label><input type="checkbox" name="taskCheckbox">设备齐全</label>
+            <label><input type="checkbox" name="taskCheckbox">外观检查</label>
+            <label><input type="checkbox" name="taskCheckbox">电气参数</label>
+            <label><input type="checkbox" name="taskCheckbox">磁场参数</label>
+            <label><input type="checkbox" name="taskCheckbox">温升测试</label>
+            <label><input type="checkbox" name="taskCheckbox">多方确认</label>
+        </div>
+        <div class="progress-bar"></div>
+        <button class="complete-button">全部完成</button>
+        <button class="delete-button">删除</button>
+    `;
+
     recordCard.innerHTML = content;
     recordContainer.appendChild(recordCard);
+     // 添加事件监听器
+     addCardListeners(recordCard);
 }
 
-// 插入任务 (根据复选框状态决定是否显示合同编号, 处理预计时间)
 function insertTask() {
     const taskInput = document.getElementById("taskInput");
-    const timeEstimateValue = document.getElementById("timeEstimateValue").value; // 获取数值
-    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;   // 获取单位
+    const timeEstimateValue = document.getElementById("timeEstimateValue").value;
+    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;
     const contractSelect = document.getElementById("contractSelect");
     const selectedContract = contractSelect.options[contractSelect.selectedIndex];
     const projectContent = selectedContract.getAttribute('data-project-content');
@@ -142,16 +160,15 @@ function insertTask() {
     const insertIndex = parseInt(insertIndexInput.value);
     const unknownContractCheckbox = document.getElementById("unknownContractCheckbox");
     const now = new Date();
-    const time = now.toLocaleTimeString();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const taskText = taskInput.value || projectContent;
-    const timeEstimate = timeEstimateValue + timeEstimateUnit; // 组合时间和单位
+    const timeEstimate = timeEstimateValue + timeEstimateUnit;
 
     const recordCard = document.createElement("div");
     recordCard.classList.add("record-card");
 
-    let content = `<p>时间：${time}</p>`;
-    // 根据复选框状态添加合同编号
+    let content = `<p>${time}</p>`;
     if (!unknownContractCheckbox.checked && selectedContract.value) {
         content += `<p>合同编号：${selectedContract.value}</p>`;
     }
@@ -159,8 +176,25 @@ function insertTask() {
         content += `<p>项目内容：${taskText}</p>`;
     }
     if (timeEstimate) {
-        content += `<p><i>预计：${timeEstimate}</i></p>`; // 显示组合后的时间
+        content += `<p><i>预计：${timeEstimate}</i></p>`;
     }
+
+      // 添加复选框组、进度条和“全部完成”按钮, 添加删除按钮
+      content += `
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="taskCheckbox">参数明晰</label>
+            <label><input type="checkbox" name="taskCheckbox">设备齐全</label>
+            <label><input type="checkbox" name="taskCheckbox">外观检查</label>
+            <label><input type="checkbox" name="taskCheckbox">电气参数</label>
+            <label><input type="checkbox" name="taskCheckbox">磁场参数</label>
+            <label><input type="checkbox" name="taskCheckbox">温升测试</label>
+            <label><input type="checkbox" name="taskCheckbox">多方确认</label>
+        </div>
+        <div class="progress-bar"></div>
+        <button class="complete-button">全部完成</button>
+        <button class="delete-button">删除</button>
+    `;
+
     recordCard.innerHTML = content;
 
     if (isNaN(insertIndex) || insertIndex < 1 || insertIndex > recordContainer.children.length) {
@@ -168,39 +202,41 @@ function insertTask() {
     } else {
         recordContainer.insertBefore(recordCard, recordContainer.children[insertIndex - 1]);
     }
+     // 添加事件监听器
+     addCardListeners(recordCard);
 }
 
-// 清空记录
 function clearRecords() {
     const recordContainer = document.getElementById("recordContainer");
+    const completedTasksContainer = document.getElementById("completed-tasks");
+     // 清空所有任务卡片
     recordContainer.innerHTML = '';
+    document.getElementById("ongoingRecordContainer").innerHTML = '';
+    completedTasksContainer.innerHTML = '<h2>已完成任务</h2>'; // 重新添加标题
 }
 
-// 显示"正在进行"的任务 (根据复选框状态决定是否显示合同编号, 处理预计时间)
 function showOngoingTask() {
     const taskInput = document.getElementById("taskInput");
-    const timeEstimateValue = document.getElementById("timeEstimateValue").value; // 获取数值
-    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;   // 获取单位
+    const timeEstimateValue = document.getElementById("timeEstimateValue").value;
+    const timeEstimateUnit = document.getElementById("timeEstimateUnit").value;
     const contractSelect = document.getElementById("contractSelect");
     const selectedContract = contractSelect.options[contractSelect.selectedIndex];
     const projectContent = selectedContract.getAttribute('data-project-content');
     const ongoingRecordContainer = document.getElementById("ongoingRecordContainer");
     const unknownContractCheckbox = document.getElementById("unknownContractCheckbox");
     const now = new Date();
-    const time = now.toLocaleTimeString();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const taskText = taskInput.value || projectContent;
-    const timeEstimate = timeEstimateValue + timeEstimateUnit; // 组合时间和单位
+    const timeEstimate = timeEstimateValue + timeEstimateUnit;
 
-    // 清空之前的"正在进行"记录
     ongoingRecordContainer.innerHTML = '';
 
     const recordCard = document.createElement("div");
     recordCard.classList.add("record-card");
     recordCard.classList.add("ongoing");
 
-    let content = `<p>时间：${time}</p>`;
-    // 根据复选框状态添加合同编号
+    let content = `<p>${time}</p>`;
     if (!unknownContractCheckbox.checked && selectedContract.value) {
         content += `<p>合同编号：${selectedContract.value}</p>`;
     }
@@ -208,80 +244,180 @@ function showOngoingTask() {
         content += `<p>正在进行：${taskText}</p>`;
     }
     if (timeEstimate) {
-        content += `<p><i>预计：${timeEstimate}</i></p>`; // 显示组合后的时间
+        content += `<p><i>预计：${timeEstimate}</i></p>`;
     }
+      // 添加复选框组、进度条和“全部完成”按钮, 添加删除按钮
+      content += `
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="taskCheckbox">参数明晰</label>
+            <label><input type="checkbox" name="taskCheckbox">设备齐全</label>
+            <label><input type="checkbox" name="taskCheckbox">外观检查</label>
+            <label><input type="checkbox" name="taskCheckbox">电气参数</label>
+            <label><input type="checkbox" name="taskCheckbox">磁场参数</label>
+            <label><input type="checkbox" name="taskCheckbox">温升测试</label>
+            <label><input type="checkbox" name="taskCheckbox">多方确认</label>
+        </div>
+        <div class="progress-bar"></div>
+        <button class="complete-button">全部完成</button>
+        <button class="delete-button">删除</button>
+    `;
     recordCard.innerHTML = content;
     ongoingRecordContainer.appendChild(recordCard);
+     // 添加事件监听器
+     addCardListeners(recordCard);
+}
+// 添加所有监听事件
+function addCardListeners(card) {
+    addCheckboxListeners(card);  //复选框
+    addCompleteButtonListener(card); //完成按钮
+    addDeleteButtonListener(card); //删除按钮
 }
 
-// 上传 CRM 文件 (修改为调用 readCSVFile)
-function uploadCRMFile() {
-    const crmFile = document.getElementById("crmFile");
-    const file = crmFile.files[0];
+// 添加复选框的事件监听器
+function addCheckboxListeners(card) {
+    const checkboxes = card.querySelectorAll('input[name="taskCheckbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            updateProgressBar(card);
+        });
+    });
+}
 
-    if (file) {
-        readCSVFile(file);
-        alert("上传成功！");
+// 添加“全部完成”按钮的事件监听器
+function addCompleteButtonListener(card) {
+    const completeButton = card.querySelector('.complete-button');
+    completeButton.addEventListener('click', () => {
+        completeTask(card);
+    });
+}
+
+// 添加“删除”按钮的事件监听器
+function addDeleteButtonListener(card) {
+    const deleteButton = card.querySelector('.delete-button');
+    deleteButton.addEventListener('click', () => {
+        card.remove(); // 直接从 DOM 中移除卡片
+    });
+}
+
+// 更新进度条
+function updateProgressBar(card) {
+    const checkboxes = card.querySelectorAll('input[name="taskCheckbox"]');
+    const progressBar = card.querySelector('.progress-bar');
+    const checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+    const progress = (checkedCount / checkboxes.length) * 100;
+
+    progressBar.style.width = `${progress}%`;
+
+    if (progress === 100) {
+        progressBar.classList.add('completed');
     } else {
-        alert("请选择文件！");
+        progressBar.classList.remove('completed');
     }
 }
 
-// 导出 CSV 文件 (修正乱码问题, 处理预计时间)
-function exportToCSV() {
-    const recordCards = document.querySelectorAll("#recordContainer .record-card, #ongoingRecordContainer .record-card");
-    const csvRows = [];
+// 完成任务，移动到“已完成任务”区域
+function completeTask(card) {
+    const checkboxes = card.querySelectorAll('input[name="taskCheckbox"]');
+    const progressBar = card.querySelector('.progress-bar');
+    const completedTasksContainer = document.getElementById('completed-tasks');
 
-    // 添加表头
-    csvRows.push(["合同编号", "项目内容", "预计时间"]);
-
-    // 遍历所有卡片
-    recordCards.forEach(card => {
-        let contractNumber = "";
-        let projectContent = "";
-        let estimatedTime = "";
-
-        // 查找合同编号
-        const contractNumberElement = card.querySelector("p:nth-child(2)");
-        if (contractNumberElement && contractNumberElement.textContent.startsWith("合同编号：")) {
-            contractNumber = contractNumberElement.textContent.replace("合同编号：", "").trim();
-        }
-
-        // 查找项目内容/正在进行
-        const projectContentElement = card.querySelector("p:nth-child(3)");
-        if (projectContentElement) {
-            const text = projectContentElement.textContent;
-            if (text.startsWith("项目内容：")) {
-                projectContent = text.replace("项目内容：", "").trim();
-            } else if (text.startsWith("正在进行：")) {
-                projectContent = text.replace("正在进行：", "").trim();
-            }
-        }
-
-        // 查找预计时间
-        const estimateTimeElement = card.querySelector("p:nth-child(4)");
-
-        if (estimateTimeElement) {
-            estimatedTime = estimateTimeElement.textContent.replace("预计：", "").trim();
-        }
-
-        // 添加到 CSV 行
-        csvRows.push([contractNumber, projectContent, estimatedTime]);
+    // 勾选所有复选框
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
     });
 
-    // 使用 Papa.unparse 将数据转换为 CSV 字符串
-    const csvString = Papa.unparse(csvRows);
+    // 更新进度条
+    progressBar.style.width = '100%';
+    progressBar.classList.add('completed');
 
-    // 创建下载链接 (修正乱码)
-    const blob = new Blob(["\ufeff", csvString], { type: "text/csv;charset=utf-8;" }); // 添加 BOM
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "工作日志.csv");
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 添加 completed 类（用于样式修改）
+    card.classList.add('completed');
+    card.classList.remove('ongoing');
+
+    // 移除事件监听器（防止重复触发）
+    const checkboxesInCard = card.querySelectorAll('input[name="taskCheckbox"]');
+    checkboxesInCard.forEach(cb => {
+      cb.removeEventListener('change', updateProgressBar);
+    });
+     card.querySelector('.complete-button').removeEventListener('click', completeTask);
+
+    // 将卡片移动到“已完成任务”容器
+    completedTasksContainer.appendChild(card);
+}
+
+// 导出 CSV 文件 (修正乱码问题, 处理预计时间, 添加任务状态)
+function exportToCSV() {
+  const recordCards = document.querySelectorAll(
+    "#recordContainer .record-card, #ongoingRecordContainer .record-card, #completed-tasks .record-card"
+  );
+  const csvRows = [];
+
+  // 添加表头
+  csvRows.push(["任务状态", "合同编号", "项目内容", "预计时间"]);
+
+  // 遍历所有卡片
+  recordCards.forEach((card) => {
+    let contractNumber = "";
+    let projectContent = "";
+    let estimatedTime = "";
+    let taskStatus = "";
+
+    // 确定任务状态
+    if (card.classList.contains("ongoing")) {
+      taskStatus = "正在进行";
+    } else if (card.classList.contains("completed")) {
+      taskStatus = "已完成";
+    } else {
+      taskStatus = "记录"; // 默认状态
+    }
+
+    // 查找合同编号
+    const contractNumberElement = card.querySelector("p:nth-child(2)");
+    if (
+      contractNumberElement &&
+      contractNumberElement.textContent.startsWith("合同编号：")
+    ) {
+      contractNumber = contractNumberElement.textContent
+        .replace("合同编号：", "")
+        .trim();
+    }
+
+    // 查找项目内容/正在进行
+    const projectContentElement = card.querySelector("p:nth-child(3)");
+    if (projectContentElement) {
+      const text = projectContentElement.textContent;
+      if (text.startsWith("项目内容：")) {
+        projectContent = text.replace("项目内容：", "").trim();
+      } else if (text.startsWith("正在进行：")) {
+        projectContent = text.replace("正在进行：", "").trim();
+      }
+    }
+
+    // 查找预计时间
+    const estimateTimeElement = card.querySelector("p:nth-child(4)");
+    if (estimateTimeElement) {
+      estimatedTime = estimateTimeElement.textContent.replace("预计：", "").trim();
+    }
+
+    // 添加到 CSV 行, 包括任务状态
+    csvRows.push([taskStatus, contractNumber, projectContent, estimatedTime]);
+  });
+
+  // 使用 Papa.unparse 将数据转换为 CSV 字符串
+  const csvString = Papa.unparse(csvRows);
+
+  // 创建下载链接 (修正乱码)
+  const blob = new Blob(["\ufeff", csvString], {
+    type: "text/csv;charset=utf-8;",
+  }); // 添加 BOM
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", "工作日志.csv");
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // 页面加载完成后的操作
@@ -297,7 +433,6 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("insertButton").addEventListener("click", insertTask);
     document.getElementById("clearButton").addEventListener("click", clearRecords);
     document.getElementById("ongoingButton").addEventListener("click", showOngoingTask);
-    document.getElementById("uploadButton").addEventListener("click", uploadCRMFile);
     document.getElementById("exportButton").addEventListener("click", exportToCSV);
 
     // 绑定文件选择事件 (修改为调用 readCSVFile)
@@ -315,4 +450,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const taskInput = document.getElementById("taskInput");
         taskInput.value = projectContent || ""; // 将项目内容填充到 "我正在做…" 输入框中
     });
+     // 时间格式化（只显示小时和分钟）
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 });
