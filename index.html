@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title id="pageTitle">测试工作日志</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 添加 PapaParse 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- 添加 Roboto 和 Nunito Sans 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <!-- 添加图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-main">
+            <header class="app-header">
+                <h1><span id="pageTitle">测试工作日志</span></h1>
+                <div class="app-actions">
+                    <button id="toggle-design-notes" class="toggle-btn">
+                        <i class="fa-solid fa-lightbulb"></i> 显示设计说明
+                    </button>
+                    <button id="crm-import-btn" class="primary-btn">
+                        <i class="fa-solid fa-file-import"></i> 导入数据
+                    </button>
+                </div>
+            </header>
+
+            <!-- 看板容器 -->
+            <div class="board-container">
+                <!-- 进行中列 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title">
+                            正在进行 <span class="column-count">(0)</span>
+                        </div>
+                        <div class="column-actions">⋮</div>
+                    </div>
+                    <div id="in-progress-cards" class="column-content">
+                        <!-- 卡片将在这里动态添加 -->
+                    </div>
+                    <button class="add-card-btn" id="in-progress-cards-add-btn">
+                        <i class="fa-solid fa-plus"></i> 添加卡片
+                    </button>
+                </div>
+
+                <!-- 待进行列 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title">
+                            待进行 <span class="column-count">(0)</span>
+                        </div>
+                        <div class="column-actions">⋮</div>
+                    </div>
+                    <div id="pending-cards" class="column-content">
+                        <!-- 卡片将在这里动态添加 -->
+                    </div>
+                    <button class="add-card-btn" id="pending-cards-add-btn">
+                        <i class="fa-solid fa-plus"></i> 添加卡片
+                    </button>
+                </div>
+
+                <!-- 部分完成列 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title">
+                            部分完成 <span class="column-count">(0)</span>
+                        </div>
+                        <div class="column-actions">⋮</div>
+                    </div>
+                    <div id="partial-cards" class="column-content">
+                        <!-- 卡片将在这里动态添加 -->
+                    </div>
+                    <button class="add-card-btn" id="partial-cards-add-btn">
+                        <i class="fa-solid fa-plus"></i> 添加卡片
+                    </button>
+                </div>
+
+                <!-- 全部完成列 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title">
+                            全部完成 <span class="column-count">(0)</span>
+                        </div>
+                        <div class="column-actions">⋮</div>
+                    </div>
+                    <div id="completed-cards" class="column-content">
+                        <!-- 卡片将在这里动态添加 -->
+                    </div>
+                    <button class="add-card-btn" id="completed-cards-add-btn">
+                        <i class="fa-solid fa-plus"></i> 添加卡片
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设计说明面板 -->
+        <aside class="design-notes-panel">
+            <div class="notes-header">
+                <h2>设计说明</h2>
+                <button id="close-design-notes" class="close-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="notes-content">
+                <section class="note-section">
+                    <h3>设计概述</h3>
+                    <p>这个原型是一个基于看板的任务管理系统，专为测试工作日志跟踪而设计。采用了卡片式UI，让用户可以直观地管理和移动任务，实现高效的工作流程管理。</p>
+                </section>
+                
+                <section class="note-section">
+                    <h3>核心功能</h3>
+                    <ul>
+                        <li><span class="highlight">看板视图</span> - 四列布局（待进行、正在进行、部分完成、全部完成）</li>
+                        <li><span class="highlight">任务卡片</span> - 可拖拽卡片，支持标题、标签、预计时间显示</li>
+                        <li><span class="highlight">右键菜单</span> - 提供快捷操作，包括移动、复制和删除</li>
+                        <li><span class="highlight">标签系统</span> - 可视化任务优先级和状态</li>
+                        <li><span class="highlight">数据导入</span> - 支持从CSV文件导入合同和项目数据，如接入CRM系统即可无须导入直接调用</li>
+                    </ul>
+                </section>
+                
+                <section class="note-section">
+                    <h3>交互设计说明</h3>
+                    <div class="interaction-note">
+                        <div class="interaction-icon"><i class="fa-solid fa-arrow-pointer"></i></div>
+                        <div class="interaction-desc">
+                            <strong>卡片操作：</strong> 悬停在卡片上时，右上角会显示三点菜单，点击打开操作面板
+                        </div>
+                    </div>
+                    <div class="interaction-note">
+                        <div class="interaction-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+                        <div class="interaction-desc">
+                            <strong>拖放功能：</strong> 卡片可以在不同状态列之间拖拽，自动更新对应标签
+                        </div>
+                    </div>
+                    <div class="interaction-note">
+                        <div class="interaction-icon"><i class="fa-solid fa-clock"></i></div>
+                        <div class="interaction-desc">
+                            <strong>时间设置：</strong> 在卡片详情中点击时钟图标，可添加预计时间
+                        </div>
+                    </div>
+                    <div class="interaction-note">
+                        <div class="interaction-icon"><i class="fa-solid fa-tag"></i></div>
+                        <div class="interaction-desc">
+                            <strong>标签添加：</strong> 在卡片详情中点击标签图标，可添加多种颜色标签
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="note-section">
+                    <h3>设计原则</h3>
+                    <p>本设计遵循了以下原则：</p>
+                    <ul>
+                        <li><strong>简洁直观</strong> - 界面简洁，减少认知负担</li>
+                        <li><strong>高效操作</strong> - 重要功能触手可及，减少点击步骤</li>
+                        <li><strong>视觉层次</strong> - 通过颜色和卡片设计建立清晰的视觉层次</li>
+                        <li><strong>一致性</strong> - 交互模式和视觉风格保持一致</li>
+                    </ul>
+                </section>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 隐藏的CRM文件输入 -->
+    <input type="file" id="crm-file" style="display: none;" accept=".csv">
+
+    <script src="js/script.js"></script>
+</body>
+</html>
